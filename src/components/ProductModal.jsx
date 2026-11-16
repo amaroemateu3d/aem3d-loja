@@ -13,22 +13,35 @@ export default function ProductModal({ product, initialVariation, onClose, onAdd
       : availableVars[0] || null
   );
 
-  const allPhotos = Array.from(
-    new Set([
-      ...(selectedVar?.foto ? [selectedVar.foto] : []),
-      ...(product?.fotos || []),
-    ].filter(Boolean))
-  );
+  useEffect(() => {
+    const nextVar =
+      initialVariation && Number(initialVariation.estoque || 0) > 0
+        ? initialVariation
+        : availableVars[0] || null;
+    setSelectedVar(nextVar);
+  }, [product, initialVariation]);
+
+  const varGallery = Array.isArray(selectedVar?.fotos) ? selectedVar.fotos.filter(Boolean) : [];
+  const allPhotos =
+    varGallery.length > 1
+      ? varGallery
+      : Array.from(
+          new Set([
+            ...(selectedVar?.foto ? [selectedVar.foto] : []),
+            ...(product?.fotos || []),
+          ].filter(Boolean))
+        );
 
   const [activePhoto, setActivePhoto] = useState(allPhotos[0] || '/logo.png');
   const [qty, setQty] = useState(1);
 
   useEffect(() => {
-    if (selectedVar?.foto) {
-      setActivePhoto(selectedVar.foto);
-    } else if (product?.fotos?.[0]) {
-      setActivePhoto(product.fotos[0]);
-    }
+    const firstVarPhoto =
+      (Array.isArray(selectedVar?.fotos) && selectedVar.fotos[0]) ||
+      selectedVar?.foto ||
+      product?.fotos?.[0] ||
+      '/logo.png';
+    setActivePhoto(firstVarPhoto);
     setQty(1);
   }, [selectedVar, product]);
 
