@@ -25,10 +25,10 @@ export default function HeroBanner() {
             target="_blank"
             rel="noopener noreferrer"
             className="hero-btn hero-btn-instagram"
-            title="Seguir no Instagram"
+            title="Acesse nosso Instagram"
           >
             <Instagram size={18} />
-            <span>@aem3d_</span>
+            <span>Acesse nosso Instagram</span>
           </a>
         </div>
       </div>
