@@ -103,12 +103,10 @@ export default async function handler(req, res) {
       return res.status(200).json({ mode: 'registered', pedidoId, numeroPedido });
     }
 
-    if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      await supabase
-        .from('loja_pedidos')
-        .update({ mp_preference_id: mpData.id })
-        .eq('id', pedidoId);
-    }
+    await supabase.rpc('set_loja_pedido_preference', {
+      p_pedido_id: pedidoId,
+      p_mp_preference_id: String(mpData.id),
+    });
 
     return res.status(200).json({
       mode: 'mercadopago',

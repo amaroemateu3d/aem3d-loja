@@ -7,8 +7,9 @@ export default async function handler(req, res) {
 
   try {
     const mpToken = process.env.MP_ACCESS_TOKEN;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!mpToken || !serviceKey) {
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+    if (!mpToken || !supabaseUrl || !supabaseKey) {
       return res.status(200).json({ received: true });
     }
 
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
     const pedidoId = payment?.external_reference;
 
     if (pedidoId) {
-      const supabase = createClient(process.env.VITE_SUPABASE_URL, serviceKey);
+      const supabase = createClient(supabaseUrl, supabaseKey);
       const nextStatus =
         payment.status === 'approved'
           ? 'pago'
@@ -32,15 +33,12 @@ export default async function handler(req, res) {
           ? 'cancelado'
           : 'aguardando_pagamento';
 
-      await supabase
-        .from('loja_pedidos')
-        .update({
-          mp_payment_id: String(paymentId),
-          mp_status: payment.status || '',
-          status: nextStatus,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', pedidoId);
+      await supabase.rpc('confirm_loja_pedido_mp', {
+        p_pedido_id: pedidoId,
+        p_mp_payment_id: String(paymentId),
+        p_mp_status: String(payment.status || ''),
+        p_status: nextStatus,
+      });
     }
 
     return res.status(200).json({ received: true });
